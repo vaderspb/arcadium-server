@@ -1,0 +1,3 @@
+[submodule "halfnes"]
+	path = halfnes
+	url = https://github.com/andrew-hoffman/halfnes.git
