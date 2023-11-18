@@ -3,18 +3,20 @@
         xmlns="http://maven.apache.org/POM/4.0.0"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>com.vaderspb</groupId>
   <artifactId>arcadium-parent</artifactId>
   <version>ls</version>
   <packaging>pom</packaging>
+
   <name>arcadium-parent</name>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.source>1.7</maven.compiler.source>
-    <maven.compiler.target>1.7</maven.compiler.target>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -23,6 +25,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <modules>
+    <module>arcadium-api-server</module>
+    <module>arcadium-transport</module>
+    <module>arcadium-session-server</module>
+    <module>arcadium-worker</module>
+    <module>arcadium-catalog</module>
+  </modules>
+
   <build>
     <pluginManagement>
       <!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
@@ -69,11 +80,4 @@
       </plugins>
     </pluginManagement>
   </build>
-  <modules>
-    <module>arcadium-api-server</module>
-    <module>arcadium-transport</module>
-    <module>arcadium-session-server</module>
-    <module>arcadium-worker</module>
-    <module>arcadium-catalog</module>
-  </modules>
 </project>
