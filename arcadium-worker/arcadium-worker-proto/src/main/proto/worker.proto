@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option java_package = "com.vaderspb.worker.proto";
+
+message RequestEnvelop {
+
+}
+
+message ResponseEnvelop {
+
+}
+
+service WorkerController {
+  rpc StatusChannel(stream RequestEnvelop) returns (stream ResponseEnvelop) {}
+
+  rpc ControlChannel(stream RequestEnvelop) returns (stream ResponseEnvelop) {}
+
+  rpc GameChannel(stream RequestEnvelop) returns (stream ResponseEnvelop) {}
+}
