@@ -6,7 +6,6 @@ import com.grapeshot.halfnes.ui.GUIInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -53,17 +52,17 @@ public class NesEngineImpl implements NesEngine {
     }
 
     @Override
-    public Closeable addVideoConsumer(final Consumer<NesVideoFrame> videoConsumer) {
+    public Subscription addVideoConsumer(final Consumer<NesVideoFrame> videoConsumer) {
         checkNotNull(videoConsumer, "videoConsumer must not be null");
 
         videoConsumerList.add(videoConsumer);
 
-        return new Closeable() {
-            private final AtomicBoolean closed = new AtomicBoolean();
+        return new Subscription() {
+            private final AtomicBoolean unSubscribed = new AtomicBoolean();
 
             @Override
-            public void close() {
-                if (!closed.getAndSet(true)) {
+            public void unSubscribe() {
+                if (!unSubscribed.getAndSet(true)) {
                     videoConsumerList.remove(videoConsumer);
                 }
             }

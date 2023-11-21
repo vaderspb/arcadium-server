@@ -2,18 +2,15 @@ syntax = "proto3";
 
 option java_package = "com.vaderspb.worker.proto";
 
-message RequestEnvelop {
-
+message VideoSettings {
+  string codec = 1;
+}
+message VideoFrame {
+  int32 type = 1;
+  bytes data = 2;
 }
 
-message ResponseEnvelop {
-
-}
-
-service WorkerController {
-  rpc StatusChannel(stream RequestEnvelop) returns (stream ResponseEnvelop) {}
-
-  rpc ControlChannel(stream RequestEnvelop) returns (stream ResponseEnvelop) {}
-
-  rpc GameChannel(stream RequestEnvelop) returns (stream ResponseEnvelop) {}
+service WorkerInterface {
+  rpc VideoChannel(stream VideoSettings) returns (stream VideoFrame) {}
+  rpc VideoChannel2(VideoSettings) returns (stream VideoFrame) {}
 }
