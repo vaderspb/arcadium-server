@@ -72,7 +72,7 @@ public class NesEngineImpl implements NesEngine {
 
     private void processFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
         for (final Consumer<NesVideoFrame> videoConsumer : videoConsumerList) {
-            videoConsumer.accept(new NesVideoFrame());
+            videoConsumer.accept(new NesVideoFrame(frame));
         }
     }
 
