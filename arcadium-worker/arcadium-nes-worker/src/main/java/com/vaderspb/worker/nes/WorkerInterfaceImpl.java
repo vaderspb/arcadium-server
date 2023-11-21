@@ -16,12 +16,12 @@ import org.slf4j.LoggerFactory;
 
 import static com.vaderspb.worker.proto.ControlJoystick.UNRECOGNIZED;
 
-public class WorkerServer extends WorkerInterfaceGrpc.WorkerInterfaceImplBase {
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerServer.class);
+public class WorkerInterfaceImpl extends WorkerInterfaceGrpc.WorkerInterfaceImplBase {
+    private static final Logger LOG = LoggerFactory.getLogger(WorkerInterfaceImpl.class);
 
     private final NesEngine nesEngine;
 
-    public WorkerServer(final NesEngine nesEngine) {
+    public WorkerInterfaceImpl(final NesEngine nesEngine) {
         this.nesEngine = nesEngine;
     }
 
