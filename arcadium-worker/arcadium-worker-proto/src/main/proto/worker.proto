@@ -1,16 +1,51 @@
 syntax = "proto3";
 
-option java_package = "com.vaderspb.worker.proto";
+import "google/protobuf/empty.proto";
+
+package com.vaderspb.worker.proto;
+
+option java_multiple_files = true;
 
 message VideoSettings {
   string codec = 1;
 }
+
 message VideoFrame {
   int32 type = 1;
   bytes data = 2;
 }
 
+
+enum ControlJoystick {
+  JOYSTICK1 = 0;
+  JOYSTICK2 = 1;
+}
+
+enum ControlState {
+  PRESSED = 0;
+  RELEASED = 1;
+}
+
+enum ControlButton {
+    UP = 0;
+    DOWN = 1;
+    LEFT = 2;
+    RIGHT = 3;
+    A = 4;
+    B = 5;
+    SELECT = 6;
+    START = 7;
+}
+
+message ControlRequest {
+  ControlJoystick controllerId = 1;
+  ControlState state = 2;
+  ControlButton button = 3;
+}
+
+
 service WorkerInterface {
   rpc VideoChannel(stream VideoSettings) returns (stream VideoFrame) {}
-  rpc VideoChannel2(VideoSettings) returns (stream VideoFrame) {}
+
+  rpc ControlChannel(stream ControlRequest) returns (google.protobuf.Empty) {}
 }
