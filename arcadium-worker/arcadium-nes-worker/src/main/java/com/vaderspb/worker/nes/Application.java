@@ -31,6 +31,8 @@ public class Application {
                 appServer.shutdown();
             }));
 
+            //RandomClicker.clickButtons(nesEngine);
+
             nesEngine.awaitTermination();
 
             appServer.shutdown();
