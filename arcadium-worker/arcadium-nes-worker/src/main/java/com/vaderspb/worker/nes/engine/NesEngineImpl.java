@@ -6,6 +6,7 @@ import com.grapeshot.halfnes.ui.GUIInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Closeable;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -24,10 +25,11 @@ import static com.grapeshot.halfnes.utils.BIT5;
 import static com.grapeshot.halfnes.utils.BIT6;
 import static com.grapeshot.halfnes.utils.BIT7;
 
-public class NesEngineImpl implements NesEngine {
+public class NesEngineImpl implements NesEngine, Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(NesEngineImpl.class);
 
     private final NES nes;
+    private volatile boolean terminated;
     private final EngineControllerInterface controller1;
     private final EngineControllerInterface controller2;
 
@@ -36,6 +38,7 @@ public class NesEngineImpl implements NesEngine {
     private final ExecutorService executor = Executors.newSingleThreadExecutor(action -> {
         final Thread thread = Executors.defaultThreadFactory().newThread(action);
         thread.setDaemon(true);
+        thread.setName("nes-main-thread");
         return thread;
     });
     private Future<?> gameFuture;
@@ -51,15 +54,27 @@ public class NesEngineImpl implements NesEngine {
     }
 
     @Override
+    public void close() {
+        executor.shutdown();
+    }
+
+    @Override
     public synchronized void start() {
         if (gameFuture == null) {
-            gameFuture = executor.submit(() -> nes.run());
+            terminated = false;
+            gameFuture = executor.submit(() -> {
+                try {
+                    nes.run();
+                } catch (final TerminatedException e) {
+                    LOG.info("The game has been stopped");
+                }
+            });
         }
     }
 
     @Override
-    public synchronized void shutdown() {
-        nes.quit();
+    public void shutdown() {
+        terminated = true;
     }
 
     @Override
@@ -114,11 +129,6 @@ public class NesEngineImpl implements NesEngine {
         }
 
         @Override
-        public void setFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
-            processFrame(frame, bgcolor, dotcrawl);
-        }
-
-        @Override
         public void messageBox(final String message) {
             LOG.info(message);
         }
@@ -128,7 +138,20 @@ public class NesEngineImpl implements NesEngine {
         }
 
         @Override
+        public void setFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
+            maybeStop();
+            processFrame(frame, bgcolor, dotcrawl);
+        }
+
+        @Override
         public void render() {
+            maybeStop();
+        }
+
+        private void maybeStop() {
+            if (terminated) {
+                throw new TerminatedException();
+            }
         }
 
         @Override
@@ -196,5 +219,8 @@ public class NesEngineImpl implements NesEngine {
         public synchronized int peekOutput() {
             return latchbyte;
         }
+    }
+
+    private static class TerminatedException extends RuntimeException {
     }
 }

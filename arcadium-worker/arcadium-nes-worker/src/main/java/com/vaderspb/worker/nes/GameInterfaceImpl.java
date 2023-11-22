@@ -7,21 +7,21 @@ import com.vaderspb.worker.nes.engine.NesJoystick;
 import com.vaderspb.worker.nes.engine.Subscription;
 import com.vaderspb.worker.proto.ControlButton;
 import com.vaderspb.worker.proto.ControlRequest;
+import com.vaderspb.worker.proto.GameInterfaceGrpc;
 import com.vaderspb.worker.proto.VideoFrame;
 import com.vaderspb.worker.proto.VideoSettings;
-import com.vaderspb.worker.proto.WorkerInterfaceGrpc;
 import io.grpc.stub.StreamObserver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaderspb.worker.proto.ControlJoystick.UNRECOGNIZED;
 
-public class WorkerInterfaceImpl extends WorkerInterfaceGrpc.WorkerInterfaceImplBase {
-    private static final Logger LOG = LoggerFactory.getLogger(WorkerInterfaceImpl.class);
+public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
+    private static final Logger LOG = LoggerFactory.getLogger(GameInterfaceImpl.class);
 
     private final NesEngine nesEngine;
 
-    public WorkerInterfaceImpl(final NesEngine nesEngine) {
+    public GameInterfaceImpl(final NesEngine nesEngine) {
         this.nesEngine = nesEngine;
     }
 

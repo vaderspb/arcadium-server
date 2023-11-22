@@ -5,27 +5,36 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 
 import java.io.IOException;
+import java.time.Duration;
 import java.util.concurrent.ExecutionException;
 
 public class Application {
     public static void main(final String[] args) throws IOException, InterruptedException, ExecutionException {
         final String romFile = System.getenv("ROM_FILE");
 
-        final NesEngineImpl nesEngine = new NesEngineImpl(romFile);
+        try (final NesEngineImpl nesEngine = new NesEngineImpl(romFile);
+             final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, Duration.ofSeconds(300))) {
 
-        final Server appServer = ServerBuilder.forPort(8080)
-                .addService(new WorkerInterfaceImpl(nesEngine))
-                .build();
+            final GameInterfaceImpl gameInterface =
+                    new GameInterfaceImpl(nesEngine);
 
-        appServer.start();
-        nesEngine.start();
+            final Server appServer = ServerBuilder.forPort(8080)
+                    .addService(adminInterface)
+                    .addService(gameInterface)
+                    .build();
 
-        appServer.awaitTermination();
-        nesEngine.awaitTermination();
+            appServer.start();
+            nesEngine.start();
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                nesEngine.shutdown();
+                appServer.shutdown();
+            }));
+
+            nesEngine.awaitTermination();
+
             appServer.shutdown();
-            nesEngine.shutdown();
-        }));
+            appServer.awaitTermination();
+        }
     }
 }

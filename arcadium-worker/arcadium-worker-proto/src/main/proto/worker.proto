@@ -44,8 +44,12 @@ message ControlRequest {
 }
 
 
-service WorkerInterface {
+service GameInterface {
   rpc VideoChannel(stream VideoSettings) returns (stream VideoFrame) {}
 
   rpc ControlChannel(stream ControlRequest) returns (google.protobuf.Empty) {}
+}
+
+service AdminInterface {
+  rpc Ping(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }
