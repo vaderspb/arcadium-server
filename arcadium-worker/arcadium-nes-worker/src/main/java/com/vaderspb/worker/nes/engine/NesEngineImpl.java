@@ -7,11 +7,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.grapeshot.halfnes.utils.BIT0;
 import static com.grapeshot.halfnes.utils.BIT1;
 import static com.grapeshot.halfnes.utils.BIT2;
@@ -30,6 +33,12 @@ public class NesEngineImpl implements NesEngine {
 
     private final CopyOnWriteArrayList<Consumer<NesVideoFrame>> videoConsumerList = new CopyOnWriteArrayList<>();
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(action -> {
+        final Thread thread = Executors.defaultThreadFactory().newThread(action);
+        thread.setDaemon(true);
+        return thread;
+    });
+    private Future<?> gameFuture;
 
     public NesEngineImpl(final String romFilePath) {
         nes = new NES(new EngineGUIInterface());
@@ -39,6 +48,25 @@ public class NesEngineImpl implements NesEngine {
         nes.setControllers(controller1, controller2);
 
         nes.loadROM(romFilePath);
+    }
+
+    @Override
+    public synchronized void start() {
+        if (gameFuture == null) {
+            gameFuture = executor.submit(() -> nes.run());
+        }
+    }
+
+    @Override
+    public synchronized void shutdown() {
+        nes.quit();
+    }
+
+    @Override
+    public synchronized void awaitTermination() throws InterruptedException, ExecutionException {
+        if (gameFuture != null) {
+            gameFuture.get();
+        }
     }
 
     @Override
@@ -83,7 +111,6 @@ public class NesEngineImpl implements NesEngine {
 
         @Override
         public void setNES(final NES nes) {
-            checkState(nes == NesEngineImpl.this.nes, "Unsupported operation");
         }
 
         @Override
