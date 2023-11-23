@@ -10,7 +10,7 @@ WORKDIR /opt/halfnes/halfnes_reduced
 RUN git checkout remove-javafx
 
 
-FROM eclipse-temurin:17-jdk-jammy
+FROM eclipse-temurin:17-jdk-jammy as builder
 
 WORKDIR /opt/halfnes
 COPY --from=nesrepo /opt/halfnes/halfnes_reduced/ halfnes_reduced
@@ -29,4 +29,11 @@ COPY arcadium-worker/ arcadium-worker
 
 RUN ./mvnw clean install -DskipTests
 
-CMD ["sleep"]
+
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /opt/arkadium
+COPY --from=builder /opt/arkadium/arcadium-worker/arcadium-nes-worker/target/arcadium-nes-worker-*.jar ./
+COPY --from=builder /opt/arkadium/arcadium-worker/arcadium-nes-worker/target/lib/*.jar ./
+
+CMD ["java", "-cp", "*", "com.vaderspb.worker.nes.Application"]
