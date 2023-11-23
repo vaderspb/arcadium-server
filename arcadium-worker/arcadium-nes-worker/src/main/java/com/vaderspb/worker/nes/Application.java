@@ -32,7 +32,14 @@ public class Application {
                 appServer.shutdown();
             }));
 
-            //RandomClicker.clickButtons(nesEngine);
+//            RandomClicker.clickButtons(nesEngine);
+
+//            final AtomicInteger counter = new AtomicInteger();
+//            nesEngine.addVideoConsumer(VideoQuality.HIGH, videoFrame -> {
+//                if (counter.getAndIncrement() % 100 == 0) {
+//                    System.out.println(videoFrame);
+//                }
+//            });
 
             nesEngine.awaitTermination();
 
