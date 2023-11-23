@@ -1,7 +1,14 @@
 package com.vaderspb.worker.nes.codec;
 
+import com.google.protobuf.ByteString;
 import com.grapeshot.halfnes.video.NesColors;
-import com.vaderspb.worker.nes.engine.NesVideoFrame;
+import com.vaderspb.worker.proto.VideoFrame;
+import com.vaderspb.worker.proto.VideoFrameType;
+
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public class NesCompressingCodec implements NesCodec {
     private static final int[][] COLOR_TABLE_INDEX;
@@ -22,24 +29,46 @@ public class NesCompressingCodec implements NesCodec {
     }
 
     private CodeTreeRoot codeTreeRoot = new CodeTreeRoot();
-    private int resetFrameCounter;
+    private final AtomicInteger framesBeforeReset = new AtomicInteger();
 
     @Override
-    public NesCodecFrame codeVideoFrame(final NesVideoFrame videoFrame) {
-        if (resetFrameCounter++ > 100) {
-            resetFrameCounter = 0;
+    public void codeVideoFrame(final int[] nesFrame, final Consumer<VideoFrame> videoFrameConsumer) {
+        if (framesBeforeReset.getAndDecrement() <= 0) {
+            framesBeforeReset.set(100);
+
             codeTreeRoot = new CodeTreeRoot();
+
+            videoFrameConsumer.accept(VideoFrame.newBuilder()
+                    .setType(VideoFrameType.INIT)
+                    .build()
+            );
         }
 
-        for (int currentPos = 0; currentPos < videoFrame.getPixels().length;) {
-            final CodeTreeNode node = codeTreeRoot.getLongestPattern(videoFrame.getPixels(), currentPos);
-            currentPos += node.getLength();
-            if (node.getLength() < 25) {
-                codeTreeRoot.addPattern(videoFrame.getPixels(), currentPos, node.getLength() + 1);
+        try (final ByteString.Output frameData = ByteString.newOutput(nesFrame.length / 10)) {
+            for (int currentPos = 0; currentPos < nesFrame.length;) {
+                final CodeTreeNode node = codeTreeRoot.getLongestPattern(nesFrame, currentPos);
+                currentPos += node.getLength();
+                frameData.write(node.getValue() & 0xFF);
+                frameData.write(node.getValue() >> 4 & 0xFF);
+                frameData.write(node.getValue() >> 8 & 0xFF);
+                frameData.write(node.getValue() >> 16 & 0xFF);
+                if (node.getLength() < 25) {
+                    codeTreeRoot.addPattern(nesFrame, currentPos, node.getLength() + 1);
+                }
             }
+            videoFrameConsumer.accept(VideoFrame.newBuilder()
+                    .setType(VideoFrameType.DATA)
+                    .setData(frameData.toByteString())
+                    .build()
+            );
+        } catch (final IOException e) {
+            throw new UncheckedIOException(e);
         }
+    }
 
-        return new NesCodecFrame();
+    @Override
+    public void reset() {
+        framesBeforeReset.set(0);
     }
 
     private static class CodeTreeRoot extends CodeTreeNode {

@@ -3,6 +3,9 @@ package com.vaderspb.worker.nes.engine;
 import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.ui.ControllerInterface;
 import com.grapeshot.halfnes.ui.GUIInterface;
+import com.vaderspb.worker.nes.codec.NesCodec;
+import com.vaderspb.worker.proto.VideoFrame;
+import com.vaderspb.worker.proto.VideoQuality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,11 +32,12 @@ public class NesEngineImpl implements NesEngine, Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(NesEngineImpl.class);
 
     private final NES nes;
+    private final NesCodec nesCodec;
     private volatile boolean terminated;
     private final EngineControllerInterface controller1;
     private final EngineControllerInterface controller2;
 
-    private final CopyOnWriteArrayList<Consumer<NesVideoFrame>> videoConsumerList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Consumer<VideoFrame>> videoConsumerList = new CopyOnWriteArrayList<>();
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor(action -> {
         final Thread thread = Executors.defaultThreadFactory().newThread(action);
@@ -41,16 +45,19 @@ public class NesEngineImpl implements NesEngine, Closeable {
         thread.setName("nes-main-thread");
         return thread;
     });
+
     private Future<?> gameFuture;
 
-    public NesEngineImpl(final String romFilePath) {
-        nes = new NES(new EngineGUIInterface());
+    public NesEngineImpl(final String romFilePath,
+                         final NesCodec nesCodec) {
+        this.nes = new NES(new EngineGUIInterface());
+        this.nesCodec = nesCodec;
 
-        controller1 = new EngineControllerInterface();
-        controller2 = new EngineControllerInterface();
-        nes.setControllers(controller1, controller2);
+        this.controller1 = new EngineControllerInterface();
+        this.controller2 = new EngineControllerInterface();
+        this.nes.setControllers(this.controller1, this.controller2);
 
-        nes.loadROM(romFilePath);
+        this.nes.loadROM(romFilePath);
     }
 
     @Override
@@ -95,10 +102,14 @@ public class NesEngineImpl implements NesEngine, Closeable {
     }
 
     @Override
-    public Subscription addVideoConsumer(final Consumer<NesVideoFrame> videoConsumer) {
+    public Subscription addVideoConsumer(final VideoQuality videoQuality,
+                                         final Consumer<VideoFrame> videoConsumer) {
+        checkNotNull(videoQuality, "videoQuality must not be null");
         checkNotNull(videoConsumer, "videoConsumer must not be null");
 
         videoConsumerList.add(videoConsumer);
+
+        nesCodec.reset();
 
         return new Subscription() {
             private final AtomicBoolean unSubscribed = new AtomicBoolean();
@@ -113,9 +124,11 @@ public class NesEngineImpl implements NesEngine, Closeable {
     }
 
     private void processFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
-        for (final Consumer<NesVideoFrame> videoConsumer : videoConsumerList) {
-            videoConsumer.accept(new NesVideoFrame(frame));
-        }
+        nesCodec.codeVideoFrame(frame, videoFrame -> {
+            for (final Consumer<VideoFrame> videoConsumer : videoConsumerList) {
+                videoConsumer.accept(videoFrame);
+            }
+        });
     }
 
     private class EngineGUIInterface implements GUIInterface {

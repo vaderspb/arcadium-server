@@ -1,5 +1,6 @@
 package com.vaderspb.worker.nes;
 
+import com.vaderspb.worker.nes.codec.NesCompressingCodec;
 import com.vaderspb.worker.nes.engine.NesEngineImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -12,7 +13,7 @@ public class Application {
     public static void main(final String[] args) throws IOException, InterruptedException, ExecutionException {
         final String romFile = System.getenv("ROM_FILE");
 
-        try (final NesEngineImpl nesEngine = new NesEngineImpl(romFile);
+        try (final NesEngineImpl nesEngine = new NesEngineImpl(romFile, new NesCompressingCodec());
              final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, Duration.ofSeconds(300))) {
 
             final GameInterfaceImpl gameInterface =

@@ -1,6 +1,5 @@
 package com.vaderspb.worker.nes;
 
-import com.google.protobuf.ByteString;
 import com.google.protobuf.Empty;
 import com.vaderspb.worker.nes.engine.NesEngine;
 import com.vaderspb.worker.nes.engine.NesJoystick;
@@ -33,22 +32,24 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
             @Override
             public void onNext(final VideoSettings videoSettings) {
                 unSubscribe();
-                consumerSubscription = nesEngine.addVideoConsumer(nesVideoFrame ->
-                        responseObserver.onNext(VideoFrame.newBuilder()
-                                .setType(1)
-                                .setData(ByteString.EMPTY)
-                                .build()
-                        ));
+
+                consumerSubscription = nesEngine.addVideoConsumer(
+                        videoSettings.getQuality(),
+                        responseObserver::onNext
+                );
             }
 
             @Override
             public void onError(final Throwable throwable) {
+                LOG.warn("Game stream error", throwable);
+
                 unSubscribe();
             }
 
             @Override
             public void onCompleted() {
                 unSubscribe();
+
                 responseObserver.onCompleted();
             }
 
@@ -62,6 +63,9 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
 
     @Override
     public StreamObserver<ControlRequest> controlChannel(final StreamObserver<Empty> responseObserver) {
+
+        responseObserver.onCompleted();
+
         return new StreamObserver<>() {
             @Override
             public void onNext(final ControlRequest controlRequest) {
@@ -105,12 +109,12 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
             }
 
             @Override
-            public void onError(final Throwable t) {
+            public void onError(final Throwable throwable) {
+                LOG.warn("Joystick stream error", throwable);
             }
 
             @Override
             public void onCompleted() {
-                responseObserver.onCompleted();
             }
         };
     }

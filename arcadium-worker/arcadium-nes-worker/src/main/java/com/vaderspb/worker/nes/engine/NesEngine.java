@@ -1,5 +1,8 @@
 package com.vaderspb.worker.nes.engine;
 
+import com.vaderspb.worker.proto.VideoFrame;
+import com.vaderspb.worker.proto.VideoQuality;
+
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -11,5 +14,5 @@ public interface NesEngine {
     NesJoystick getJoystick1();
     NesJoystick getJoystick2();
 
-    Subscription addVideoConsumer(Consumer<NesVideoFrame> videoConsumer);
+    Subscription addVideoConsumer(VideoQuality videoQuality, Consumer<VideoFrame> videoConsumer);
 }
