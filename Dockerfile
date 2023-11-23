@@ -36,6 +36,6 @@ WORKDIR /opt/arkadium
 COPY --from=builder /opt/arkadium/arcadium-worker/arcadium-nes-worker/target/arcadium-nes-worker-*.jar ./
 COPY --from=builder /opt/arkadium/arcadium-worker/arcadium-nes-worker/target/lib/*.jar ./
 
-COPY nes/btoads.nes ./
+COPY nes/*.nes ./
 
 CMD ["java", "-cp", "*", "com.vaderspb.worker.nes.Application"]
