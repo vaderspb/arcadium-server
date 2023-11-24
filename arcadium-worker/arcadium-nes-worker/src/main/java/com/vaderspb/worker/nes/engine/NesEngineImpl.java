@@ -3,16 +3,22 @@ package com.vaderspb.worker.nes.engine;
 import com.grapeshot.halfnes.NES;
 import com.grapeshot.halfnes.ui.ControllerInterface;
 import com.grapeshot.halfnes.ui.GUIInterface;
+import com.vaderspb.worker.nes.codec.NesCodec;
+import com.vaderspb.worker.proto.VideoFrame;
+import com.vaderspb.worker.proto.VideoQuality;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 import static com.grapeshot.halfnes.utils.BIT0;
 import static com.grapeshot.halfnes.utils.BIT1;
 import static com.grapeshot.halfnes.utils.BIT2;
@@ -22,24 +28,67 @@ import static com.grapeshot.halfnes.utils.BIT5;
 import static com.grapeshot.halfnes.utils.BIT6;
 import static com.grapeshot.halfnes.utils.BIT7;
 
-public class NesEngineImpl implements NesEngine {
+public class NesEngineImpl implements NesEngine, Closeable {
     private static final Logger LOG = LoggerFactory.getLogger(NesEngineImpl.class);
 
     private final NES nes;
+    private final NesCodec nesCodec;
+    private volatile boolean terminated;
     private final EngineControllerInterface controller1;
     private final EngineControllerInterface controller2;
 
-    private final CopyOnWriteArrayList<Consumer<NesVideoFrame>> videoConsumerList = new CopyOnWriteArrayList<>();
+    private final CopyOnWriteArrayList<Consumer<VideoFrame>> videoConsumerList = new CopyOnWriteArrayList<>();
 
+    private final ExecutorService executor = Executors.newSingleThreadExecutor(action -> {
+        final Thread thread = Executors.defaultThreadFactory().newThread(action);
+        thread.setDaemon(true);
+        thread.setName("nes-main-thread");
+        return thread;
+    });
 
-    public NesEngineImpl(final String romFilePath) {
-        nes = new NES(new EngineGUIInterface());
+    private Future<?> gameFuture;
 
-        controller1 = new EngineControllerInterface();
-        controller2 = new EngineControllerInterface();
-        nes.setControllers(controller1, controller2);
+    public NesEngineImpl(final String romFilePath,
+                         final NesCodec nesCodec) {
+        this.nes = new NES(new EngineGUIInterface());
+        this.nesCodec = nesCodec;
 
-        nes.loadROM(romFilePath);
+        this.controller1 = new EngineControllerInterface();
+        this.controller2 = new EngineControllerInterface();
+        this.nes.setControllers(this.controller1, this.controller2);
+
+        this.nes.loadROM(romFilePath);
+    }
+
+    @Override
+    public void close() {
+        executor.shutdown();
+    }
+
+    @Override
+    public synchronized void start() {
+        if (gameFuture == null) {
+            terminated = false;
+            gameFuture = executor.submit(() -> {
+                try {
+                    nes.run();
+                } catch (final TerminatedException e) {
+                    LOG.info("The game has been stopped");
+                }
+            });
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        terminated = true;
+    }
+
+    @Override
+    public synchronized void awaitTermination() throws InterruptedException, ExecutionException {
+        if (gameFuture != null) {
+            gameFuture.get();
+        }
     }
 
     @Override
@@ -53,17 +102,21 @@ public class NesEngineImpl implements NesEngine {
     }
 
     @Override
-    public Closeable addVideoConsumer(final Consumer<NesVideoFrame> videoConsumer) {
+    public Subscription addVideoConsumer(final VideoQuality videoQuality,
+                                         final Consumer<VideoFrame> videoConsumer) {
+        checkNotNull(videoQuality, "videoQuality must not be null");
         checkNotNull(videoConsumer, "videoConsumer must not be null");
 
         videoConsumerList.add(videoConsumer);
 
-        return new Closeable() {
-            private final AtomicBoolean closed = new AtomicBoolean();
+        nesCodec.reset();
+
+        return new Subscription() {
+            private final AtomicBoolean unSubscribed = new AtomicBoolean();
 
             @Override
-            public void close() {
-                if (!closed.getAndSet(true)) {
+            public void unSubscribe() {
+                if (!unSubscribed.getAndSet(true)) {
                     videoConsumerList.remove(videoConsumer);
                 }
             }
@@ -71,9 +124,11 @@ public class NesEngineImpl implements NesEngine {
     }
 
     private void processFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
-        for (final Consumer<NesVideoFrame> videoConsumer : videoConsumerList) {
-            videoConsumer.accept(new NesVideoFrame(frame));
-        }
+        nesCodec.codeVideoFrame(frame, videoFrame -> {
+            for (final Consumer<VideoFrame> videoConsumer : videoConsumerList) {
+                videoConsumer.accept(videoFrame);
+            }
+        });
     }
 
     private class EngineGUIInterface implements GUIInterface {
@@ -84,12 +139,6 @@ public class NesEngineImpl implements NesEngine {
 
         @Override
         public void setNES(final NES nes) {
-            checkState(nes == NesEngineImpl.this.nes, "Unsupported operation");
-        }
-
-        @Override
-        public void setFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
-            processFrame(frame, bgcolor, dotcrawl);
         }
 
         @Override
@@ -102,7 +151,20 @@ public class NesEngineImpl implements NesEngine {
         }
 
         @Override
+        public void setFrame(final int[] frame, final int[] bgcolor, final boolean dotcrawl) {
+            maybeStop();
+            processFrame(frame, bgcolor, dotcrawl);
+        }
+
+        @Override
         public void render() {
+            maybeStop();
+        }
+
+        private void maybeStop() {
+            if (terminated) {
+                throw new TerminatedException();
+            }
         }
 
         @Override
@@ -170,5 +232,8 @@ public class NesEngineImpl implements NesEngine {
         public synchronized int peekOutput() {
             return latchbyte;
         }
+    }
+
+    private static class TerminatedException extends RuntimeException {
     }
 }

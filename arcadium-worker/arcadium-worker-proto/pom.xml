@@ -33,6 +33,11 @@
       <artifactId>grpc-protobuf</artifactId>
       <version>${grpc-verion}</version>
     </dependency>
+    <dependency>
+      <groupId>io.grpc</groupId>
+      <artifactId>grpc-netty</artifactId>
+      <version>${grpc-verion}</version>
+    </dependency>
 
     <dependency>
       <groupId>junit</groupId>
