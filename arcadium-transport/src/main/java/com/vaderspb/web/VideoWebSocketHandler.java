@@ -5,6 +5,7 @@ import com.vaderspb.worker.proto.VideoFrame;
 import com.vaderspb.worker.proto.VideoQuality;
 import com.vaderspb.worker.proto.VideoSettings;
 import io.grpc.stub.StreamObserver;
+import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
@@ -63,6 +64,16 @@ public class VideoWebSocketHandler implements WebSocketHandler {
 
     private static WebSocketMessage toWsMessage(final WebSocketSession session,
                                                 final VideoFrame videoFrame) {
-        return session.textMessage("");
+        return session.binaryMessage(bufferFactory -> {
+            final DataBuffer dataBuffer = bufferFactory.allocateBuffer(
+                    videoFrame.getData().size() + 1
+            );
+            dataBuffer.write((byte) videoFrame.getType().getNumber());
+            for (int i = 0; i < videoFrame.getData().size(); i++) {
+                final byte datum = videoFrame.getData().byteAt(i);
+                dataBuffer.write(datum);
+            }
+            return dataBuffer;
+        });
     }
 }
