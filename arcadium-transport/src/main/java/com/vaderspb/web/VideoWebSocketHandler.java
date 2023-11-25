@@ -10,8 +10,8 @@ import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
 import org.springframework.web.reactive.socket.WebSocketSession;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
-import reactor.core.publisher.SynchronousSink;
 
 public class VideoWebSocketHandler implements WebSocketHandler {
     private final GameInterfaceGrpc.GameInterfaceStub gameInterfaceStub;
@@ -23,8 +23,8 @@ public class VideoWebSocketHandler implements WebSocketHandler {
     @Override
     public Mono<Void> handle(final WebSocketSession session) {
         final Mono<Void> sendingCompletion = session.send(
-                Flux.generate(this::connectToVideoStream)
-                        .map(frame -> toWsMessage(session, frame))
+                Flux.create(this::connectToVideoStream)
+                        .map(frame -> toVideoMessage(session, frame))
         );
 
         final Mono<Void> receivingCompletion = session.receive()
@@ -34,20 +34,22 @@ public class VideoWebSocketHandler implements WebSocketHandler {
                 .then();
     }
 
-    private void connectToVideoStream(final SynchronousSink<VideoFrame> sink) {
+    private void connectToVideoStream(final FluxSink<VideoFrame> emitter) {
         final StreamObserver<VideoSettings> settingsObserver =
-                gameInterfaceStub.videoChannel(new VideoStreamObserver(sink));
+                gameInterfaceStub.videoChannel(new VideoStreamObserver(emitter));
+
         settingsObserver.onNext(VideoSettings.newBuilder()
                 .setQuality(VideoQuality.HIGH)
                 .build()
         );
-        settingsObserver.onCompleted();
+
+        emitter.onCancel(settingsObserver::onCompleted);
     }
 
     private static class VideoStreamObserver implements StreamObserver<VideoFrame> {
-        private final SynchronousSink<VideoFrame> sink;
+        private final FluxSink<VideoFrame> sink;
 
-        private VideoStreamObserver(final SynchronousSink<VideoFrame> sink) {
+        private VideoStreamObserver(final FluxSink<VideoFrame> sink) {
             this.sink = sink;
         }
 
@@ -55,20 +57,18 @@ public class VideoWebSocketHandler implements WebSocketHandler {
         public void onNext(final VideoFrame value) {
             sink.next(value);
         }
-
         @Override
         public void onError(final Throwable th) {
             sink.error(th);
         }
-
         @Override
         public void onCompleted() {
             sink.complete();
         }
     }
 
-    private static WebSocketMessage toWsMessage(final WebSocketSession session,
-                                                final VideoFrame videoFrame) {
+    private static WebSocketMessage toVideoMessage(final WebSocketSession session,
+                                                   final VideoFrame videoFrame) {
         return session.binaryMessage(bufferFactory -> {
             final DataBuffer dataBuffer = bufferFactory.allocateBuffer(
                     videoFrame.getData().size() + 1
