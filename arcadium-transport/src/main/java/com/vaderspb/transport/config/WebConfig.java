@@ -1,7 +1,7 @@
-package com.vaderspb.config;
+package com.vaderspb.transport.config;
 
 import com.google.common.collect.ImmutableMap;
-import com.vaderspb.web.VideoWebSocketHandler;
+import com.vaderspb.transport.web.VideoWebSocketHandler;
 import com.vaderspb.worker.proto.GameInterfaceGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

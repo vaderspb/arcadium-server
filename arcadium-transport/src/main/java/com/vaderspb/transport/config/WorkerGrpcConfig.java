@@ -1,4 +1,4 @@
-package com.vaderspb.config;
+package com.vaderspb.transport.config;
 
 import com.vaderspb.worker.proto.GameInterfaceGrpc;
 import io.grpc.Grpc;

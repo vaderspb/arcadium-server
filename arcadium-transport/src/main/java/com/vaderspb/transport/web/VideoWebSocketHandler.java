@@ -1,4 +1,4 @@
-package com.vaderspb.web;
+package com.vaderspb.transport.web;
 
 import com.vaderspb.worker.proto.GameInterfaceGrpc;
 import com.vaderspb.worker.proto.VideoFrame;
