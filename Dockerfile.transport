@@ -33,7 +33,6 @@ RUN ./mvnw clean install -DskipTests
 FROM eclipse-temurin:17-jdk-jammy
 
 WORKDIR /opt/arkadium
-COPY --from=builder /opt/arkadium/arcadium-transport/target/arcadium-transport-*.jar ./
-COPY --from=builder /opt/arkadium/arcadium-transport/target/lib/*.jar ./
+COPY --from=builder /opt/arkadium/arcadium-transport/target/arcadium-transport-*.jar arcadium-transport.jar
 
-CMD ["java", "-cp", "*", "com.vaderspb.transport.ArcadiumTransportApplication"]
+CMD ["java", "-jar", "arcadium-transport.jar"]
