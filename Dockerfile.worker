@@ -38,4 +38,4 @@ COPY --from=builder /opt/arkadium/arcadium-worker/arcadium-nes-worker/target/lib
 
 COPY nes/*.nes ./
 
-CMD ["java", "-cp", "*", "com.vaderspb.worker.nes.Application"]
+ENTRYPOINT ["java", "-cp", "*", "com.vaderspb.worker.nes.Application"]
