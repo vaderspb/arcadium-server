@@ -16,7 +16,7 @@ public class WorkerGrpcConfig {
 
     @Bean(destroyMethod = "shutdown")
     public ManagedChannel workerChannel() {
-        return Grpc.newChannelBuilder("localhost:8080", InsecureChannelCredentials.create())
+        return Grpc.newChannelBuilder("job1.arcadium-worker:8080", InsecureChannelCredentials.create())
                 .build();
     }
 }
