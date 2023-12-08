@@ -12,9 +12,10 @@ import java.util.concurrent.ExecutionException;
 public class Application {
     public static void main(final String[] args) throws IOException, InterruptedException, ExecutionException {
         final String romFile = System.getenv("ROM_FILE");
+        final Duration inactivityDuration = Duration.parse(System.getenv("INACTIVITY_DURATION"));
 
         try (final NesEngineImpl nesEngine = new NesEngineImpl(romFile, new NesCompressingCodec());
-             final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, Duration.ofSeconds(300))) {
+             final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, inactivityDuration)) {
 
             final GameInterfaceImpl gameInterface =
                     new GameInterfaceImpl(nesEngine);
