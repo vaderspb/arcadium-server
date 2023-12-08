@@ -5,6 +5,8 @@ import com.vaderspb.worker.proto.VideoFrame;
 import com.vaderspb.worker.proto.VideoQuality;
 import com.vaderspb.worker.proto.VideoSettings;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.web.reactive.socket.WebSocketHandler;
 import org.springframework.web.reactive.socket.WebSocketMessage;
@@ -14,6 +16,8 @@ import reactor.core.publisher.FluxSink;
 import reactor.core.publisher.Mono;
 
 public class VideoWebSocketHandler implements WebSocketHandler {
+    private static final Logger LOG = LoggerFactory.getLogger(VideoWebSocketHandler.class);
+
     private final GameInterfaceGrpc.GameInterfaceStub gameInterfaceStub;
 
     public VideoWebSocketHandler(final GameInterfaceGrpc.GameInterfaceStub gameInterfaceStub) {
@@ -22,6 +26,8 @@ public class VideoWebSocketHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(final WebSocketSession session) {
+        LOG.info("New session connected");
+
         final Mono<Void> sendingCompletion = session.send(
                 Flux.create(this::connectToVideoStream)
                         .map(frame -> toVideoMessage(session, frame))

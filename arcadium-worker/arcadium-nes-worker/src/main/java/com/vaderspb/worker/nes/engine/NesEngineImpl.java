@@ -107,6 +107,8 @@ public class NesEngineImpl implements NesEngine, Closeable {
         checkNotNull(videoQuality, "videoQuality must not be null");
         checkNotNull(videoConsumer, "videoConsumer must not be null");
 
+        LOG.info("Subscribing to video engine at quality={}", videoQuality);
+
         videoConsumerList.add(videoConsumer);
 
         nesCodec.reset();
@@ -116,6 +118,8 @@ public class NesEngineImpl implements NesEngine, Closeable {
 
             @Override
             public void unSubscribe() {
+                LOG.info("Unsubscribing from video engine at quality={}", videoQuality);
+
                 if (!unSubscribed.getAndSet(true)) {
                     videoConsumerList.remove(videoConsumer);
                 }
