@@ -15,14 +15,6 @@
 
   <name>arcadium-worker</name>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.xolstice.maven.plugins</groupId>
-        <artifactId>protobuf-maven-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
   <modules>
     <module>arcadium-worker-controller</module>
     <module>arcadium-nes-worker</module>

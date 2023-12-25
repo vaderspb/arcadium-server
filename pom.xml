@@ -77,6 +77,7 @@
   <modules>
     <module>arcadium-api-server</module>
     <module>arcadium-transport</module>
+    <module>arcadium-session-proto</module>
     <module>arcadium-session-server</module>
     <module>arcadium-worker</module>
     <module>arcadium-catalog</module>
