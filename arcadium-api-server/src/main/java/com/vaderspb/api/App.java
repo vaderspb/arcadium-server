@@ -1,4 +1,4 @@
-package com.vaderspb;
+package com.vaderspb.api;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
