@@ -4,9 +4,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class App {
+public class SessionServer {
     public static void main(final String[] args) {
-        final SpringApplication springApplication = new SpringApplication(App.class);
+        final SpringApplication springApplication = new SpringApplication(SessionServer.class);
         springApplication.setKeepAlive(true);
         springApplication.run(args);
     }
