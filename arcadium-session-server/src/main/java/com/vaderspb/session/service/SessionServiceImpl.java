@@ -7,7 +7,6 @@ import com.vaderspb.session.proto.CreateSessionResponse;
 import com.vaderspb.session.proto.SessionServiceGrpc;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.grpc.stub.StreamObserver;
-import io.micrometer.core.instrument.util.TimeUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 
 import java.io.ByteArrayInputStream;
@@ -32,9 +31,14 @@ public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBas
                     TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 
             final Jinjava jinjava = new Jinjava();
-            final String renderedWorkerConfig = jinjava.render(workerConfig, ImmutableMap.of("workerId", sessionId));
+            final String renderedWorkerConfig = jinjava.render(
+                    workerConfig,
+                    ImmutableMap.of("workerId", sessionId)
+            );
 
-            kubernetesClient.load(new ByteArrayInputStream(renderedWorkerConfig.getBytes(StandardCharsets.UTF_8))).create();
+            kubernetesClient.load(new ByteArrayInputStream(
+                    renderedWorkerConfig.getBytes(StandardCharsets.UTF_8)
+            )).create();
 
             responseObserver.onNext(CreateSessionResponse.newBuilder()
                     .setId(sessionId)
