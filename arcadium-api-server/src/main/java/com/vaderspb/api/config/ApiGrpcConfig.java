@@ -16,7 +16,7 @@ public class ApiGrpcConfig {
 
     @Bean(destroyMethod = "shutdown")
     public ManagedChannel sessionServerChannel() {
-        return Grpc.newChannelBuilder("session-server:8080", InsecureChannelCredentials.create())
+        return Grpc.newChannelBuilder("arcadium-session-server-service:8080", InsecureChannelCredentials.create())
                 .build();
     }
 }

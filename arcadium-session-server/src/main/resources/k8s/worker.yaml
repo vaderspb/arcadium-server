@@ -1,16 +1,16 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: arcadium-worker
+  name: arcadium-worker-{{workerId}}
 spec:
   backoffLimit: 100
   template:
     metadata:
       labels:
-        app: arcadium-worker
+        app: arcadium-worker-{{workerId}}
     spec:
-      hostname: job1
-      subdomain: arcadium-worker
+      hostname: {{workerId}}
+      subdomain: arcadium-worker-{{workerId}}
       containers:
         - name: app
           image: vaderspb/arcadium-worker:0.0.1v4
@@ -38,10 +38,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: arcadium-worker
+  name: arcadium-worker-{{workerId}}
 spec:
   clusterIP: None
   ports:
     - port: 8080
   selector:
-    app: arcadium-worker
+    app: arcadium-worker-{{workerId}}
