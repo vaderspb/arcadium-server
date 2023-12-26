@@ -1,0 +1,8 @@
+FROM vaderspb/arcadium-builder as builder
+
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /opt/arkadium
+COPY --from=builder /opt/arkadium/arcadium-session-server/target/arcadium-session-server-*.jar arcadium-session-server.jar
+
+ENTRYPOINT ["java", "-jar", "arcadium-session-server.jar"]
