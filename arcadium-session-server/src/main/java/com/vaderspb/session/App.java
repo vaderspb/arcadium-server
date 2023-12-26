@@ -1,15 +1,13 @@
 package com.vaderspb.session;
 
-import com.vaderspb.session.service.SessionServiceImpl;
-import io.grpc.Server;
-import io.grpc.ServerBuilder;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+@SpringBootApplication
 public class App {
     public static void main(final String[] args) {
-        final Server appServer = ServerBuilder.forPort(8080)
-                .addService(new SessionServiceImpl())
-                .build();
-
-        Runtime.getRuntime().addShutdownHook(new Thread(appServer::shutdown));
+        final SpringApplication springApplication = new SpringApplication(App.class);
+        springApplication.setKeepAlive(true);
+        springApplication.run(args);
     }
 }
