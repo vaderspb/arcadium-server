@@ -1,2 +1,2 @@
 
-export ARCADIUM_VERSION=0.0.1v7
+export ARCADIUM_VERSION=0.0.1v8

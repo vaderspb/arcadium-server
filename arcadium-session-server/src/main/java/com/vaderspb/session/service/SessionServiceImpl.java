@@ -31,7 +31,7 @@ public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBas
     public void createSession(final CreateSessionRequest request,
                               final StreamObserver<CreateSessionResponse> responseObserver) {
         try {
-            final String sessionId = RandomStringUtils.randomAlphabetic(16) +
+            final String sessionId = RandomStringUtils.random(16, "abcdefghijklmnopqrstuvwxyz") +
                     TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
 
             final Jinjava jinjava = new Jinjava();
