@@ -8,12 +8,16 @@ import com.vaderspb.session.proto.SessionServiceGrpc;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.grpc.stub.StreamObserver;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBase {
+    private static final Logger LOG = LoggerFactory.getLogger(SessionServiceImpl.class);
+
     private final KubernetesClient kubernetesClient;
     private final String workerConfig;
 
@@ -44,9 +48,11 @@ public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBas
                     .setId(sessionId)
                     .build()
             );
+            responseObserver.onCompleted();
         } catch (final Throwable e) {
+            LOG.warn("Unable to start a session", e);
+
             responseObserver.onError(e);
         }
-        responseObserver.onCompleted();
     }
 }
