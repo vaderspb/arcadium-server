@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import com.hubspot.jinjava.Jinjava;
 import com.vaderspb.session.proto.CreateSessionRequest;
 import com.vaderspb.session.proto.CreateSessionResponse;
+import com.vaderspb.session.proto.GetSessionInfoRequest;
+import com.vaderspb.session.proto.GetSessionInfoResponse;
 import com.vaderspb.session.proto.SessionServiceGrpc;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.grpc.stub.StreamObserver;
@@ -54,5 +56,16 @@ public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBas
 
             responseObserver.onError(e);
         }
+    }
+
+    @Override
+    public void getSessionInfo(final GetSessionInfoRequest request,
+                               final StreamObserver<GetSessionInfoResponse> responseObserver) {
+        responseObserver.onNext(GetSessionInfoResponse.newBuilder()
+                .setId(request.getId())
+                .setAddress(request.getId() + ".arcadium-worker:8080")
+                .build()
+        );
+        responseObserver.onCompleted();
     }
 }

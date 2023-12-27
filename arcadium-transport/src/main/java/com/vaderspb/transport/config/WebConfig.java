@@ -1,8 +1,8 @@
 package com.vaderspb.transport.config;
 
 import com.google.common.collect.ImmutableMap;
+import com.vaderspb.transport.service.WorkerGameService;
 import com.vaderspb.transport.web.VideoWebSocketHandler;
-import com.vaderspb.worker.proto.GameInterfaceGrpc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.reactive.HandlerMapping;
@@ -22,7 +22,7 @@ public class WebConfig {
     }
 
     @Bean
-    public WebSocketHandler videoWebSocketHandler(final GameInterfaceGrpc.GameInterfaceStub gameInterfaceStub) {
-        return new VideoWebSocketHandler(gameInterfaceStub);
+    public WebSocketHandler videoWebSocketHandler(final WorkerGameService workerGameService) {
+        return new VideoWebSocketHandler(workerGameService);
     }
 }
