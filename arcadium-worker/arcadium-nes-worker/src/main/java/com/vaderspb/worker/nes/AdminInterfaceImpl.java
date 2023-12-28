@@ -44,7 +44,7 @@ public class AdminInterfaceImpl extends AdminInterfaceGrpc.AdminInterfaceImplBas
     @Override
     public void ping(final Empty request,
                      final StreamObserver<Empty> responseObserver) {
-        terminationTimestamp.set(System.currentTimeMillis());
+        scheduleTermination();
 
         responseObserver.onCompleted();
     }
@@ -54,7 +54,7 @@ public class AdminInterfaceImpl extends AdminInterfaceGrpc.AdminInterfaceImplBas
     }
 
     private void maybeTerminate() {
-        if (System.currentTimeMillis() > this.terminationTimestamp.get()) {
+        if (System.currentTimeMillis() > terminationTimestamp.get()) {
             LOG.info("Shutting down after the inactivity period of {}", inactivityDuration);
             try {
                 nesEngine.shutdown();

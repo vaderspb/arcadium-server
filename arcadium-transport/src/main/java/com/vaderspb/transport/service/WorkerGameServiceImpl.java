@@ -196,7 +196,6 @@ public class WorkerGameServiceImpl implements WorkerGameService {
         }
         @Override
         public void onCompleted() {
-            monoSink.success();
         }
     }
 }

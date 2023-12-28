@@ -71,12 +71,14 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
 
     @Override
     public StreamObserver<ControlRequest> controlChannel(final StreamObserver<Empty> responseObserver) {
-
+        responseObserver.onNext(Empty.getDefaultInstance());
         responseObserver.onCompleted();
 
         return new StreamObserver<>() {
             @Override
             public void onNext(final ControlRequest controlRequest) {
+                adminInterface.ping(Empty.getDefaultInstance(), EmptyStreamObserver.INSTANCE);
+
                 if (controlRequest.getControllerId() == UNRECOGNIZED) {
                     LOG.info("Unrecognized controller id: request=[{}]", controlRequest);
                     return;

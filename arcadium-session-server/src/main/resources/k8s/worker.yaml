@@ -13,7 +13,7 @@ spec:
       subdomain: arcadium-worker
       containers:
         - name: app
-          image: vaderspb/arcadium-worker:0.0.1v17
+          image: vaderspb/arcadium-worker:0.0.1v22
           args:
             - -XX:InitialRAMPercentage=80
             - -XX:MaxRAMPercentage=80
@@ -21,7 +21,7 @@ spec:
             - name: ROM_FILE
               value: /opt/arkadium/Battletoads.nes
             - name: INACTIVITY_DURATION
-              value: PT5M
+              value: PT10M
           ports:
             - name: http2
               containerPort: 8080
