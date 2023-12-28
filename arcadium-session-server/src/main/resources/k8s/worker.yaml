@@ -3,14 +3,14 @@ kind: Job
 metadata:
   name: arcadium-worker-{{workerId}}
 spec:
-  backoffLimit: 100
+  backoffLimit: 10
   template:
     metadata:
       labels:
-        app: arcadium-worker-{{workerId}}
+        app: arcadium-worker
     spec:
       hostname: {{workerId}}
-      subdomain: arcadium-worker-{{workerId}}
+      subdomain: arcadium-worker
       containers:
         - name: app
           image: vaderspb/arcadium-worker:0.0.1v4
@@ -21,7 +21,7 @@ spec:
             - name: ROM_FILE
               value: /opt/arkadium/Battletoads.nes
             - name: INACTIVITY_DURATION
-              value: P5M
+              value: PT5M
           ports:
             - name: http
               containerPort: 8080
@@ -34,14 +34,3 @@ spec:
               cpu: 1000m
               memory: 2048Mi
       restartPolicy: Never
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: arcadium-worker-{{workerId}}
-spec:
-  clusterIP: None
-  ports:
-    - port: 8080
-  selector:
-    app: arcadium-worker-{{workerId}}
