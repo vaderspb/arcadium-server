@@ -1,5 +1,7 @@
 package com.vaderspb.transport.web;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
 import com.vaderspb.transport.service.WorkerGameService;
 import com.vaderspb.worker.proto.ControlButton;
@@ -17,6 +19,7 @@ import reactor.core.publisher.Mono;
 public class ControlWebSocketHandler implements WebSocketHandler {
     private static final Logger LOG = LoggerFactory.getLogger(ControlWebSocketHandler.class);
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final WorkerGameService workerGameService;
 
     public ControlWebSocketHandler(final WorkerGameService workerGameService) {
@@ -36,15 +39,31 @@ public class ControlWebSocketHandler implements WebSocketHandler {
 
         return workerGameService.controlChannel(
                 sessionId,
-                session.receive().map(this::toControlMessage)
+                session.receive().flatMap(this::toControlMessage)
         );
     }
 
-    private ControlRequest toControlMessage(final WebSocketMessage webSocketMessage) {
-        return ControlRequest.newBuilder()
-                .setControllerId(ControlJoystick.JOYSTICK1)
-                .setButton(ControlButton.B)
-                .setState(ControlState.PRESSED)
-                .build();
+    private Mono<ControlRequest> toControlMessage(final WebSocketMessage webSocketMessage) {
+        if (webSocketMessage.getType() != WebSocketMessage.Type.TEXT) {
+            return Mono.empty();
+        }
+        try {
+            final ControlMessage controlMessage = objectMapper.readValue(
+                    webSocketMessage.getPayloadAsText(), ControlMessage.class
+            );
+            return Mono.just(ControlRequest.newBuilder()
+                    .setControllerId(controlMessage.controllerId())
+                    .setButton(controlMessage.button())
+                    .setState(controlMessage.state())
+                    .build()
+            );
+        } catch (final JsonProcessingException e) {
+            LOG.warn("Cannot parse control message", e);
+
+            return Mono.empty();
+        }
+    }
+
+    record ControlMessage(ControlJoystick controllerId, ControlButton button, ControlState state) {
     }
 }
