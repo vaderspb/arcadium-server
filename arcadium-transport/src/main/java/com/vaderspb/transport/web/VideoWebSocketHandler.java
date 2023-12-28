@@ -25,7 +25,7 @@ public class VideoWebSocketHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(final WebSocketSession session) {
-        LOG.info("New session connected");
+        LOG.info("New session connected: {}", session.getHandshakeInfo().getUri());
 
         final String sessionId = Iterables.getOnlyElement(
                 UriComponentsBuilder.fromUri(session.getHandshakeInfo().getUri())
@@ -43,9 +43,7 @@ public class VideoWebSocketHandler implements WebSocketHandler {
                         .map(frame -> toVideoMessage(session, frame))
         );
 
-        final Mono<Void> receivingCompletion = session.receive().then();
-
-        return Mono.zip(receivingCompletion, sendingCompletion).then();
+        return Mono.zip(session.receive().then(), sendingCompletion).then();
     }
 
     private static WebSocketMessage toVideoMessage(final WebSocketSession session,
