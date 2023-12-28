@@ -151,23 +151,28 @@ public class WorkerGameServiceImpl implements WorkerGameService {
                                 gameInterfaceStub.controlChannel(new MonoSinkStreamObserver<>(sink));
 
                         final Disposable controllerRequestsHandle =
-                                controlRequests.subscribe(controlRequestStreamObserver::onNext);
+                                controlRequests.subscribe(
+                                        controlRequestStreamObserver::onNext,
+                                        error -> LOG.warn("Error in control stream", error),
+                                        () -> {
+                                            try {
+                                                controlRequestStreamObserver.onCompleted();
+                                            } catch (final Exception e) {
+                                                LOG.warn("Unable to stop server stream", e);
+                                            }
+                                            try {
+                                                managedChannel.shutdown();
+                                            } catch (final Exception e) {
+                                                LOG.warn("Unable to stop server Grpc channel", e);
+                                            }
+                                        }
+                                );
 
                         sink.onDispose(() -> {
                             try {
                                 controllerRequestsHandle.dispose();
                             } catch (final Exception e) {
                                 LOG.warn("Unable to stop client stream", e);
-                            }
-                            try {
-                                controlRequestStreamObserver.onCompleted();
-                            } catch (final Exception e) {
-                                LOG.warn("Unable to stop server stream", e);
-                            }
-                            try {
-                                managedChannel.shutdown();
-                            } catch (final Exception e) {
-                                LOG.warn("Unable to stop server Grpc channel", e);
                             }
                         });
                     });
