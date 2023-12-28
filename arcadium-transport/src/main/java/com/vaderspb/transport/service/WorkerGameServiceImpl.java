@@ -152,7 +152,14 @@ public class WorkerGameServiceImpl implements WorkerGameService {
 
                         final Disposable controllerRequestsHandle =
                                 controlRequests.subscribe(
-                                        controlRequestStreamObserver::onNext,
+                                        controlRequest -> {
+                                            LOG.info("Sending new control request: {}", controlRequest);
+                                            try {
+                                                controlRequestStreamObserver.onNext(controlRequest);
+                                            } catch (final Exception e) {
+                                                LOG.warn("Unable to send control request", e);
+                                            }
+                                        },
                                         error -> LOG.warn("Error in control stream", error),
                                         () -> {
                                             try {

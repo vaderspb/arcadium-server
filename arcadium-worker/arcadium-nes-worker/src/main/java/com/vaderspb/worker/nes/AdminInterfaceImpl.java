@@ -19,7 +19,7 @@ public class AdminInterfaceImpl extends AdminInterfaceGrpc.AdminInterfaceImplBas
 
     private final NesEngine nesEngine;
     private final Duration inactivityDuration;
-    private final AtomicLong terminationTimestamp = new AtomicLong();
+    private final AtomicLong terminationNanos = new AtomicLong();
     private final Timer timer = new Timer();
 
     public AdminInterfaceImpl(final NesEngine nesEngine,
@@ -50,11 +50,12 @@ public class AdminInterfaceImpl extends AdminInterfaceGrpc.AdminInterfaceImplBas
     }
 
     private void scheduleTermination() {
-        this.terminationTimestamp.set(System.currentTimeMillis() + inactivityDuration.toMillis());
+        this.terminationNanos.set(System.nanoTime() + inactivityDuration.toNanos());
     }
 
     private void maybeTerminate() {
-        if (System.currentTimeMillis() > terminationTimestamp.get()) {
+        LOG.info("Scheduled shutdown nanoTime={}", terminationNanos.get());
+        if (System.nanoTime() > terminationNanos.get()) {
             LOG.info("Shutting down after the inactivity period of {}", inactivityDuration);
             try {
                 nesEngine.shutdown();

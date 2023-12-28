@@ -13,7 +13,7 @@ spec:
       subdomain: arcadium-worker
       containers:
         - name: app
-          image: vaderspb/arcadium-worker:0.0.1v22
+          image: vaderspb/arcadium-worker:0.0.1v25
           args:
             - -XX:InitialRAMPercentage=80
             - -XX:MaxRAMPercentage=80

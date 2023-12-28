@@ -30,6 +30,8 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
 
     @Override
     public StreamObserver<VideoSettings> videoChannel(final StreamObserver<VideoFrame> responseObserver) {
+        LOG.info("Video channel attached");
+
         return new StreamObserver<>() {
             private Subscription consumerSubscription;
 
@@ -71,12 +73,13 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
 
     @Override
     public StreamObserver<ControlRequest> controlChannel(final StreamObserver<Empty> responseObserver) {
-        responseObserver.onNext(Empty.getDefaultInstance());
-        responseObserver.onCompleted();
+        LOG.info("Control channel attached");
 
         return new StreamObserver<>() {
             @Override
             public void onNext(final ControlRequest controlRequest) {
+                LOG.info("Control channel request: {}", controlRequest);
+
                 adminInterface.ping(Empty.getDefaultInstance(), EmptyStreamObserver.INSTANCE);
 
                 if (controlRequest.getControllerId() == UNRECOGNIZED) {
@@ -125,6 +128,8 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
 
             @Override
             public void onCompleted() {
+                responseObserver.onNext(Empty.getDefaultInstance());
+                responseObserver.onCompleted();
             }
         };
     }
