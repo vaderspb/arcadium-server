@@ -18,7 +18,7 @@ public class Application {
              final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, inactivityDuration)) {
 
             final GameInterfaceImpl gameInterface =
-                    new GameInterfaceImpl(nesEngine);
+                    new GameInterfaceImpl(adminInterface, nesEngine);
 
             final Server appServer = ServerBuilder.forPort(8080)
                     .addService(adminInterface)

@@ -4,6 +4,7 @@ import com.google.protobuf.Empty;
 import com.vaderspb.worker.nes.engine.NesEngine;
 import com.vaderspb.worker.nes.engine.NesJoystick;
 import com.vaderspb.worker.nes.engine.Subscription;
+import com.vaderspb.worker.proto.AdminInterfaceGrpc.AdminInterfaceImplBase;
 import com.vaderspb.worker.proto.ControlButton;
 import com.vaderspb.worker.proto.ControlRequest;
 import com.vaderspb.worker.proto.GameInterfaceGrpc;
@@ -18,9 +19,12 @@ import static com.vaderspb.worker.proto.ControlJoystick.UNRECOGNIZED;
 public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
     private static final Logger LOG = LoggerFactory.getLogger(GameInterfaceImpl.class);
 
+    private final AdminInterfaceImplBase adminInterface;
     private final NesEngine nesEngine;
 
-    public GameInterfaceImpl(final NesEngine nesEngine) {
+    public GameInterfaceImpl(final AdminInterfaceImplBase adminInterface,
+                             final NesEngine nesEngine) {
+        this.adminInterface = adminInterface;
         this.nesEngine = nesEngine;
     }
 
@@ -35,7 +39,11 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
 
                 consumerSubscription = nesEngine.addVideoConsumer(
                         videoSettings.getQuality(),
-                        responseObserver::onNext
+                        frame -> {
+                            responseObserver.onNext(frame);
+
+                            adminInterface.ping(Empty.getDefaultInstance(), EmptyStreamObserver.INSTANCE);
+                        }
                 );
             }
 
@@ -117,5 +125,19 @@ public class GameInterfaceImpl extends GameInterfaceGrpc.GameInterfaceImplBase {
             public void onCompleted() {
             }
         };
+    }
+
+    private static class EmptyStreamObserver implements StreamObserver<Empty> {
+        private static final EmptyStreamObserver INSTANCE = new EmptyStreamObserver();
+
+        @Override
+        public void onNext(final Empty value) {
+        }
+        @Override
+        public void onError(final Throwable t) {
+        }
+        @Override
+        public void onCompleted() {
+        }
     }
 }

@@ -44,8 +44,6 @@ public class AdminInterfaceImpl extends AdminInterfaceGrpc.AdminInterfaceImplBas
     @Override
     public void ping(final Empty request,
                      final StreamObserver<Empty> responseObserver) {
-        LOG.info("ping");
-
         terminationTimestamp.set(System.currentTimeMillis());
 
         responseObserver.onCompleted();
