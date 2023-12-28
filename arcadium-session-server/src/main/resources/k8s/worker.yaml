@@ -13,7 +13,7 @@ spec:
       subdomain: arcadium-worker
       containers:
         - name: app
-          image: vaderspb/arcadium-worker:0.0.1v4
+          image: vaderspb/arcadium-worker:0.0.1v17
           args:
             - -XX:InitialRAMPercentage=80
             - -XX:MaxRAMPercentage=80
@@ -23,7 +23,7 @@ spec:
             - name: INACTIVITY_DURATION
               value: PT5M
           ports:
-            - name: http
+            - name: http2
               containerPort: 8080
               protocol: TCP
           resources:
