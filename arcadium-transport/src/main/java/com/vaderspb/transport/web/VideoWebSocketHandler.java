@@ -25,7 +25,7 @@ public class VideoWebSocketHandler implements WebSocketHandler {
 
     @Override
     public Mono<Void> handle(final WebSocketSession session) {
-        LOG.info("New session connected: {}", session.getHandshakeInfo().getUri());
+        LOG.info("New video session connected: {}", session.getHandshakeInfo().getUri());
 
         final String sessionId = Iterables.getOnlyElement(
                 UriComponentsBuilder.fromUri(session.getHandshakeInfo().getUri())
