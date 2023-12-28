@@ -134,8 +134,7 @@ public class WorkerGameServiceImpl implements WorkerGameService {
         checkNotNull(sessionId);
         checkNotNull(controlRequests);
 
-        final Mono<GetSessionInfoResponse> sessionInfo =
-                getSessionInfo(sessionId);
+        final Mono<GetSessionInfoResponse> sessionInfo = getSessionInfo(sessionId);
 
         return sessionInfo
                 .map(GetSessionInfoResponse::getAddress)
