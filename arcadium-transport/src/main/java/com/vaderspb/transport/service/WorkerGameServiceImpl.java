@@ -68,7 +68,18 @@ public class WorkerGameServiceImpl implements WorkerGameService {
 
             settingsObserver.onNext(videoSettings);
 
-            sink.onCancel(settingsObserver::onCompleted);
+            sink.onDispose(() -> {
+                try {
+                    settingsObserver.onCompleted();
+                } catch (final Exception e) {
+                    LOG.warn("Unable to stop server stream", e);
+                }
+                try {
+                    managedChannel.shutdown();
+                } catch (final Exception e) {
+                    LOG.warn("Unable to stop Grpc channel", e);
+                }
+            });
         });
     }
 
