@@ -8,6 +8,7 @@ import io.grpc.ServerBuilder;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 
 public class Application {
     public static void main(final String[] args) throws IOException, InterruptedException, ExecutionException {
@@ -36,7 +37,7 @@ public class Application {
             nesEngine.awaitTermination();
 
             appServer.shutdown();
-            appServer.awaitTermination();
+            appServer.awaitTermination(1, TimeUnit.SECONDS);
         }
     }
 }
