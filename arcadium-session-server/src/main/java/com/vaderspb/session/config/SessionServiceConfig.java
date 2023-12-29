@@ -17,9 +17,14 @@ public class SessionServiceConfig {
     @Bean
     public SessionServiceGrpc.SessionServiceImplBase sessionService(
             final KubernetesClient kubernetesClient,
+            final WorkerProperties workerProperties,
             @Value("classpath:/k8s/worker.yaml")
             final Resource config) throws IOException {
-        return new SessionServiceImpl(kubernetesClient, config.getContentAsString(StandardCharsets.UTF_8));
+        return new SessionServiceImpl(
+                kubernetesClient,
+                workerProperties,
+                config.getContentAsString(StandardCharsets.UTF_8)
+        );
     }
 
     @Bean

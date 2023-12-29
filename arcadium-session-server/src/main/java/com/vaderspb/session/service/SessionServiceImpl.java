@@ -2,6 +2,7 @@ package com.vaderspb.session.service;
 
 import com.google.common.collect.ImmutableMap;
 import com.hubspot.jinjava.Jinjava;
+import com.vaderspb.session.config.WorkerProperties;
 import com.vaderspb.session.proto.CreateSessionRequest;
 import com.vaderspb.session.proto.CreateSessionResponse;
 import com.vaderspb.session.proto.GetSessionInfoRequest;
@@ -21,12 +22,15 @@ public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBas
     private static final Logger LOG = LoggerFactory.getLogger(SessionServiceImpl.class);
 
     private final KubernetesClient kubernetesClient;
-    private final String workerConfig;
+    private final WorkerProperties workerProperties;
+    private final String workerConfigTemplate;
 
     public SessionServiceImpl(final KubernetesClient kubernetesClient,
-                              final String workerConfig) {
+                              final WorkerProperties workerProperties,
+                              final String workerConfigTemplate) {
         this.kubernetesClient = kubernetesClient;
-        this.workerConfig = workerConfig;
+        this.workerProperties = workerProperties;
+        this.workerConfigTemplate = workerConfigTemplate;
     }
 
     @Override
@@ -38,8 +42,11 @@ public class SessionServiceImpl extends SessionServiceGrpc.SessionServiceImplBas
 
             final Jinjava jinjava = new Jinjava();
             final String renderedWorkerConfig = jinjava.render(
-                    workerConfig,
-                    ImmutableMap.of("workerId", sessionId)
+                    workerConfigTemplate,
+                    ImmutableMap.of(
+                            "workerId", sessionId,
+                            "workerConfig", workerProperties
+                    )
             );
 
             kubernetesClient.load(new ByteArrayInputStream(

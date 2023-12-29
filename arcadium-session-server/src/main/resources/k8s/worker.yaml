@@ -9,11 +9,11 @@ spec:
       labels:
         app: arcadium-worker
     spec:
-      hostname: {{workerId}}
+      hostname: {{ workerId }}
       subdomain: arcadium-worker
       containers:
         - name: app
-          image: vaderspb/arcadium-worker:0.0.1v25
+          image: {{ workerConfig.image }}
           args:
             - -XX:InitialRAMPercentage=80
             - -XX:MaxRAMPercentage=80
@@ -28,9 +28,9 @@ spec:
               protocol: TCP
           resources:
             limits:
-              cpu: 1000m
-              memory: 2048Mi
+              cpu: {{ workerConfig.resources.limits.cpu }}
+              memory: {{ workerConfig.resources.limits.memory }}
             requests:
-              cpu: 1000m
-              memory: 2048Mi
+              cpu: {{ workerConfig.resources.requests.cpu }}
+              memory: {{ workerConfig.resources.requests.memory }}
       restartPolicy: Never
