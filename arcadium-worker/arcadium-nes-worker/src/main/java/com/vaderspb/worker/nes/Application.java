@@ -18,7 +18,7 @@ public class Application {
              final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, inactivityDuration)) {
 
             final GameInterfaceImpl gameInterface =
-                    new GameInterfaceImpl(nesEngine);
+                    new GameInterfaceImpl(adminInterface, nesEngine);
 
             final Server appServer = ServerBuilder.forPort(8080)
                     .addService(adminInterface)
@@ -32,15 +32,6 @@ public class Application {
                 nesEngine.shutdown();
                 appServer.shutdown();
             }));
-
-//            RandomClicker.clickButtons(nesEngine);
-
-//            final AtomicInteger counter = new AtomicInteger();
-//            nesEngine.addVideoConsumer(VideoQuality.HIGH, videoFrame -> {
-//                if (counter.getAndIncrement() % 100 == 0) {
-//                    System.out.println(videoFrame);
-//                }
-//            });
 
             nesEngine.awaitTermination();
 

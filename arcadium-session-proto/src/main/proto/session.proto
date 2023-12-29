@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "google/protobuf/empty.proto";
+
+package com.vaderspb.session.proto;
+
+option java_multiple_files = true;
+
+
+service SessionService {
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse) {}
+
+  rpc GetSessionInfo(GetSessionInfoRequest) returns (GetSessionInfoResponse) {}
+}
+
+message CreateSessionRequest {
+}
+
+message CreateSessionResponse {
+  string id = 1;
+}
+
+message GetSessionInfoRequest {
+  string id = 1;
+}
+
+message GetSessionInfoResponse {
+  string id = 1;
+  string address = 2;
+}
