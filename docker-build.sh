@@ -9,3 +9,4 @@ docker build -t vaderspb/arcadium-api-server:${ARCADIUM_VERSION} --no-cache -f D
 docker build -t vaderspb/arcadium-session-server:${ARCADIUM_VERSION} --no-cache -f Dockerfile.sessionserver .
 docker build -t vaderspb/arcadium-transport:${ARCADIUM_VERSION} --no-cache -f Dockerfile.transport .
 docker build -t vaderspb/arcadium-worker:${ARCADIUM_VERSION} --no-cache -f Dockerfile.worker .
+docker build -t vaderspb/arcadium-storage:${ARCADIUM_VERSION} --no-cache -f Dockerfile.storage .

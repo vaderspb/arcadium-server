@@ -1,0 +1,11 @@
+FROM nginx:alpine
+
+WORKDIR /usr/share/nginx/html
+
+RUN rm -rf *
+
+WORKDIR /usr/share/nginx/html/nes
+
+COPY nes/*.nes ./
+
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

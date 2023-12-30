@@ -34,6 +34,7 @@ public class NesEngineImpl implements NesEngine, Closeable {
     private final NES nes;
     private final NesCodec nesCodec;
     private volatile boolean terminated;
+    private long processedFramesCount;
     private final EngineControllerInterface controller1;
     private final EngineControllerInterface controller2;
 
@@ -82,6 +83,7 @@ public class NesEngineImpl implements NesEngine, Closeable {
     @Override
     public void shutdown() {
         terminated = true;
+        LOG.info("Engine is set to get terminated");
     }
 
     @Override
@@ -166,6 +168,9 @@ public class NesEngineImpl implements NesEngine, Closeable {
         }
 
         private void maybeStop() {
+            if (++processedFramesCount % 100 == 0) {
+                LOG.info("Processed frames: {}", processedFramesCount);
+            }
             if (terminated) {
                 throw new TerminatedException();
             }
