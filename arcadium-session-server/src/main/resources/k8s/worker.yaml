@@ -50,6 +50,12 @@ spec:
           volumeMounts:
             - mountPath: /var/nes
               name: nes-data
+          livenessProbe:
+            tcpSocket:
+              port: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8080
           resources:
             limits:
               cpu: {{ workerConfig.resources.limits.cpu }}
