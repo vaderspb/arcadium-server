@@ -37,9 +37,7 @@ public class WorkerGameServiceImpl implements WorkerGameService {
         checkNotNull(sessionId);
         checkNotNull(videoSettings);
 
-        final Mono<GetSessionInfoResponse> sessionInfo = getSessionInfo(sessionId);
-
-        return sessionInfo
+        return getSessionInfo(sessionId)
                 .map(GetSessionInfoResponse::getAddress)
                 .flatMapMany(address -> connectToVideoStream(address, videoSettings));
     }
@@ -134,9 +132,7 @@ public class WorkerGameServiceImpl implements WorkerGameService {
         checkNotNull(sessionId);
         checkNotNull(controlRequests);
 
-        final Mono<GetSessionInfoResponse> sessionInfo = getSessionInfo(sessionId);
-
-        return sessionInfo
+        return getSessionInfo(sessionId)
                 .map(GetSessionInfoResponse::getAddress)
                 .flatMap(address -> {
                     final ManagedChannel managedChannel =
