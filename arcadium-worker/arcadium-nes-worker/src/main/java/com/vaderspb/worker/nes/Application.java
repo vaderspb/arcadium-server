@@ -1,6 +1,6 @@
 package com.vaderspb.worker.nes;
 
-import com.vaderspb.worker.nes.codec.NesCompressingCodec;
+import com.vaderspb.worker.nes.codec.NesRawCodec;
 import com.vaderspb.worker.nes.engine.NesEngineImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -15,7 +15,7 @@ public class Application {
         final String romFile = System.getenv("ROM_FILE");
         final Duration inactivityDuration = Duration.parse(System.getenv("INACTIVITY_DURATION"));
 
-        try (final NesEngineImpl nesEngine = new NesEngineImpl(romFile, new NesCompressingCodec());
+        try (final NesEngineImpl nesEngine = new NesEngineImpl(romFile, new NesRawCodec());
              final AdminInterfaceImpl adminInterface = new AdminInterfaceImpl(nesEngine, inactivityDuration)) {
 
             final GameInterfaceImpl gameInterface =
