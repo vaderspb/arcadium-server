@@ -4,11 +4,11 @@
   <parent>
     <artifactId>arcadium-worker</artifactId>
     <groupId>com.vaderspb</groupId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>arcadium-nes-worker</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>0.0.1-SNAPSHOT</version>
 
   <name>arcadium-nes-worker</name>
 
