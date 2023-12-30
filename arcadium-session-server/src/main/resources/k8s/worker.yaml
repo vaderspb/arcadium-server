@@ -11,14 +11,20 @@ spec:
     spec:
       hostname: {{ workerId }}
       subdomain: arcadium-worker
+      volumes:
+        - name: nes-data
+          emptyDir: { }
       initContainers:
         - name: nes-loader
           image: curlimages/curl:8.5.0
           command:
             - curl
             - -o
-            - /tmp/game.nes
+            - /var/nes/game.nes
             - http://arcadium-storage-service:8080/nes/Battletoads.nes
+          volumeMounts:
+            - mountPath: /var/nes
+              name: nes-data
           resources:
             limits:
               cpu: 250m
@@ -34,13 +40,16 @@ spec:
             - -XX:MaxRAMPercentage=80
           env:
             - name: ROM_FILE
-              value: /tmp/game.nes
+              value: /var/nes/game.nes
             - name: INACTIVITY_DURATION
               value: PT10M
           ports:
             - name: http2
               containerPort: 8080
               protocol: TCP
+          volumeMounts:
+            - mountPath: /var/nes
+              name: nes-data
           resources:
             limits:
               cpu: {{ workerConfig.resources.limits.cpu }}
